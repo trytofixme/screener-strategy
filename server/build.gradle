@@ -55,7 +55,7 @@ bootJar {
 
 springBoot {
     buildInfo()
-    mainClass = 'ru.screener.notification.App'
+    mainClass = 'ru.screener.App'
 }
 
 test {

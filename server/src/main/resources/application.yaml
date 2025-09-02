@@ -1,26 +1,33 @@
 spring:
-  data:
-    kafka:
-      bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
-      consumer:
-        group-id: notification-service
-        auto-offset-reset: earliest
-        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
+    consumer:
+      group-id: strategy-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        client.dns.lookup: use_all_dns_ips
-      listener:
-        ack-mode: manual
-      topic:
-        market:
-          name: market.bybit
-          partitions: 1
-        user:
-          name: settings.rsi
-          partitions: 1
-        notification:
-          name: notification.send
-          partitions: 1
+        spring.json.add.type.headers: true
+    properties:
+      client.dns.lookup: use_all_dns_ips
+    listener:
+      ack-mode: manual
+
+app:
+  kafka:
+    topic:
+      market:
+        name: market.bybit
+        partitions: 1
+      user:
+        name: settings.rsi
+        partitions: 1
+      notification:
+        name: notification.send
+        partitions: 1
 
 server:
   port: 8081
@@ -33,3 +40,4 @@ services:
   user-service:
     host: localhost
     port: 8080
+

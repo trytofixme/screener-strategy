@@ -11,6 +11,7 @@ import ru.screener.model.strategies.Strategy;
 import ru.screener.producer.notification.NotificationPublisher;
 import ru.screener.service.strategy.StrategyProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,12 +44,25 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
                             .setSymbol(rsiEvent.getSymbol())
                             .setTimeframe(rsiEvent.getTimeframe())
                             .setDirection(Direction.DOWN)
+                            .setRsi(rsiEvent.getRsi())
                             .setSignalNumber(strategyCount);
                     notificationPublisher.sendMessage(notification);
 
-                    strategyCounts.computeIfAbsent(setting.getTelegramId(), k -> 0);
+                    strategyCounts.put(setting.getTelegramId(), strategyCount + 1);
                 }
             }
         });
+    }
+
+    public void updateUserStrategy(RsiSettingsEvent setting) {
+        userStrategies.compute(setting.getTelegramId(), (user, list) -> {
+            List<RsiSettingsEvent> updated = list != null ? new ArrayList<>(list) : new ArrayList<>();
+            updated.add(setting);
+            return updated;
+        });
+    }
+
+    public void loadInitialSettings(List<RsiSettingsEvent> settings) {
+        settings.forEach(this::updateUserStrategy);
     }
 }

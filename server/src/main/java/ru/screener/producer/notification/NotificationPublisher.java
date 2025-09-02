@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import ru.screener.config.kafka.bybit.KafkaRsiSettingsTopicProperties;
+import ru.screener.config.kafka.notification.KafkaNotificationTopicProperties;
 import ru.screener.model.kafka.bybit.notification.NotificationEvent;
 
 @Component
@@ -12,7 +12,7 @@ import ru.screener.model.kafka.bybit.notification.NotificationEvent;
 @Slf4j
 public class NotificationPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final KafkaRsiSettingsTopicProperties topicProperties;
+    private final KafkaNotificationTopicProperties topicProperties;
 
     public void sendMessage(NotificationEvent notificationDto) {
         kafkaTemplate.send(topicProperties.getName(), notificationDto).thenAccept(arg ->

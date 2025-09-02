@@ -8,7 +8,7 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.retry.annotation.EnableRetry;
 
 @SpringBootApplication
-@EnableFeignClients(basePackages = "ru.screener.strategy.integrations")
+@EnableFeignClients(basePackages = "ru.screener.integrations")
 @EnableRetry
 @EnableKafka
 public class App {
@@ -18,3 +18,4 @@ public class App {
                 .run(args);
     }
 }
+

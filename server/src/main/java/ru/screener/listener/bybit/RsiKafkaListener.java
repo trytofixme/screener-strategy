@@ -26,7 +26,7 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiEvent> {
     }
 
     @KafkaListener(
-            topics = "${spring.kafka.topic.market.name}",
+            topics = "${app.kafka.topic.market.name}",
             groupId = "strategy-service",
             containerFactory = "kafkaListenerContainerFactory"
     )
