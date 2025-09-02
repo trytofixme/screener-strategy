@@ -12,8 +12,14 @@ spring:
       listener:
         ack-mode: manual
       topic:
-        quotes:
-          name: market.bybit.quotes
+        market:
+          name: market.bybit
+          partitions: 1
+        user:
+          name: settings.rsi
+          partitions: 1
+        notification:
+          name: notification.send
           partitions: 1
 
 server:
