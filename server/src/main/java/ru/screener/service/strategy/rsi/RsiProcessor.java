@@ -3,6 +3,8 @@ package ru.screener.service.strategy.rsi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.screener.model.kafka.bybit.notification.NotificationEvent;
 import ru.screener.model.kafka.bybit.settings.RsiSettingsEvent;
 import ru.screener.model.kafka.bybit.strategies.RsiEvent;
@@ -30,13 +32,14 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
         userStrategies.forEach((userId, settings) -> {
             for (RsiSettingsEvent setting : settings) {
                 if (!rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
-                && !rsiEvent.getTimeframe().equals(setting.getLongTimeFrame())) {
+                        && !rsiEvent.getTimeframe().equals(setting.getLongTimeFrame())) {
                     continue;
                 }
 
                 if (rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
                         && rsiEvent.getRsi().compareTo(setting.getShortRsi()) > 0) {
-                    Integer strategyCount = strategyCounts.getOrDefault(setting.getTelegramId(), 0);
+
+                    int strategyCount = strategyCounts.getOrDefault(setting.getTelegramId(), 0);
 
                     NotificationEvent notification = new NotificationEvent()
                             .setTelegramId(setting.getTelegramId())
@@ -46,8 +49,8 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
                             .setDirection(Direction.DOWN)
                             .setRsi(rsiEvent.getRsi())
                             .setSignalNumber(strategyCount);
-                    notificationPublisher.sendMessage(notification);
 
+                    notificationPublisher.sendMessage(notification);
                     strategyCounts.put(setting.getTelegramId(), strategyCount + 1);
                 }
             }
@@ -56,13 +59,15 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
 
     public void updateUserStrategy(RsiSettingsEvent setting) {
         userStrategies.compute(setting.getTelegramId(), (user, list) -> {
-            List<RsiSettingsEvent> updated = list != null ? new ArrayList<>(list) : new ArrayList<>();
+            List<RsiSettingsEvent> updated = (list != null) ? new ArrayList<>(list) : new ArrayList<>();
             updated.add(setting);
             return updated;
         });
     }
 
-    public void loadInitialSettings(List<RsiSettingsEvent> settings) {
-        settings.forEach(this::updateUserStrategy);
+    public Mono<Void> loadInitialSettings(Flux<RsiSettingsEvent> settingsFlux) {
+        return settingsFlux
+                .doOnNext(this::updateUserStrategy)
+                .then();
     }
 }
