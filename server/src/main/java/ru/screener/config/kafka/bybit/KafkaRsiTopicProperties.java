@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "spring.data.kafka.topic.market")
+@ConfigurationProperties(prefix = "app.kafka.topic.market")
 @Configuration
 public class KafkaRsiTopicProperties {
 
