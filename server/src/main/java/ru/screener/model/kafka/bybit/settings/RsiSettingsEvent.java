@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class RsiSettingsEvent {
 
     @JsonProperty(value = "telegram_id")
-    private String telegramId;
+    private Long telegramId;
 
     @JsonProperty(value = "short_time_frame")
     private String shortTimeFrame;
