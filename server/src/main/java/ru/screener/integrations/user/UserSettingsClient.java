@@ -32,7 +32,7 @@ public class UserSettingsClient {
                 .timeout(Duration.ofSeconds(5))
                 .retryWhen(Retry.backoff(4, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(8))
                         .filter(this::isRetryable))
-                .doOnSubscribe(s -> log.info("Fetching RSI settings..."))
+                .doOnSubscribe(s -> log.info("Fetching RSI settings...123"))
                 .doOnError(e -> log.error("Failed to fetch RSI settings", e));
     }
 
