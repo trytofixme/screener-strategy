@@ -31,6 +31,7 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiEvent> {
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void listenBybitTopic(String message, Acknowledgment ack) {
+        log.info("Get message {}", message);
         RsiEvent rsiEvent = getEvent(message);
         log.info("Received a message from {}: {}", topicProperties.getName(), rsiEvent);
 
