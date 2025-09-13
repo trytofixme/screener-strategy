@@ -19,15 +19,18 @@ public class UserSettingsClient {
     private final WebClient userServiceWebClient;
 
     public Flux<RsiSettingsEvent> getRsiSettings() {
-        return userServiceWebClient
-                .get()
+        return userServiceWebClient.get()
                 .uri("/api/v1/settings/rsi")
-                .retrieve()
-                .bodyToFlux(RsiSettingsEvent.class)
+                .exchangeToFlux(resp -> {
+                    if (resp.statusCode().is2xxSuccessful()) return resp.bodyToFlux(RsiSettingsEvent.class);
+                    return resp.bodyToMono(String.class).defaultIfEmpty("")
+                            .flatMapMany(body -> {
+                                log.error("UserService error: {} {}", resp.statusCode(), body);
+                                return Flux.error(new IllegalStateException("UserService " + resp.statusCode()));
+                            });
+                })
                 .timeout(Duration.ofSeconds(5))
-                .retryWhen(Retry
-                        .backoff(4, Duration.ofSeconds(1))
-                        .maxBackoff(Duration.ofSeconds(8))
+                .retryWhen(Retry.backoff(4, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(8))
                         .filter(this::isRetryable))
                 .doOnSubscribe(s -> log.info("Fetching RSI settings..."))
                 .doOnError(e -> log.error("Failed to fetch RSI settings", e));
