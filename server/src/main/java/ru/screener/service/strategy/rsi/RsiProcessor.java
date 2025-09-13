@@ -29,6 +29,7 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
 
     @Override
     public void process(RsiEvent rsiEvent) {
+        log.info("process RsiEvent : {}", rsiEvent);
         userStrategies.forEach((userId, settings) -> {
             for (RsiSettingsEvent setting : settings) {
                 if (!rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
@@ -63,6 +64,7 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
             updated.add(setting);
             return updated;
         });
+        log.info("userStrategies: {}", userStrategies);
     }
 
     public Mono<Void> loadInitialSettings(Flux<RsiSettingsEvent> settingsFlux) {
