@@ -33,9 +33,20 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiEvent> {
     public void listenBybitTopic(String message, Acknowledgment ack) {
         log.info("Get message {}", message);
         RsiEvent rsiEvent = getEvent(message);
+        if (rsiEvent == null || rsiEvent.getSymbol() == null) {
+            log.error("Failed to deserialize message or message is incomplete. Original message: {}. Deserialized object: {}", message, rsiEvent);
+            ack.acknowledge();
+            return;
+        }
+
         log.info("Received a message from {}: {}", topicProperties.getName(), rsiEvent);
 
-        strategyProcessor.process(rsiEvent);
+        try {
+            strategyProcessor.process(rsiEvent);
+        } catch (Exception e) {
+            log.error("Error processing event: {}", rsiEvent, e);
+        }
+
         ack.acknowledge();
     }
 }
