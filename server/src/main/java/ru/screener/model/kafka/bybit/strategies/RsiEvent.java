@@ -10,8 +10,10 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 public class RsiEvent {
 
+    @JsonProperty("Symbol")
     private String symbol;
-    @JsonProperty("timeFrame")
+    @JsonProperty("TimeFrame")
     private String timeframe;
+    @JsonProperty("RSI")
     private BigDecimal rsi;
 }
