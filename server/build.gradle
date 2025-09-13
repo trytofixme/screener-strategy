@@ -53,6 +53,4 @@ springBoot {
     mainClass = 'ru.screener.App'
 }
 
-test {
-    systemProperty 'spring.profiles.active', 'test'
-}
+tasks.named('jar') { enabled = false }
