@@ -21,13 +21,13 @@ app:
     topic:
       market:
         name: market.bybit
-        partitions: 1
+        partitions: 3
       user:
         name: settings.rsi
-        partitions: 1
+        partitions: 3
       notification:
         name: notification.send
-        partitions: 1
+        partitions: 3
 
 server:
   port: 8081
@@ -39,3 +39,33 @@ logging:
 services:
   user-service:
     base-url: http://localhost:8080
+
+---
+spring:
+  config:
+    activate:
+      on-cloud-platform: kubernetes
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,metrics,prometheus
+  health:
+    kafka:
+      enabled: false
