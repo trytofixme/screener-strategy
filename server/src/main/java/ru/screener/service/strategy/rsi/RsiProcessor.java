@@ -24,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RsiProcessor implements StrategyProcessor<RsiEvent> {
 
     private final NotificationPublisher notificationPublisher;
-    private final Map<String, List<RsiSettingsEvent>> userStrategies = new ConcurrentHashMap<>();
-    private final Map<String, Integer> strategyCounts = new ConcurrentHashMap<>();
+    private final Map<Long, List<RsiSettingsEvent>> userStrategies = new ConcurrentHashMap<>();
+    private final Map<Long, Integer> strategyCounts = new ConcurrentHashMap<>();
 
     @Override
     public void process(RsiEvent rsiEvent) {
