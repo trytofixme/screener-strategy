@@ -2,6 +2,7 @@ package ru.screener.integrations.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -21,18 +22,14 @@ public class UserSettingsClient {
     public Flux<RsiSettingsEvent> getRsiSettings() {
         return userServiceWebClient.get()
                 .uri("/api/v1/settings/rsi")
-                .exchangeToFlux(resp -> {
-                    if (resp.statusCode().is2xxSuccessful()) return resp.bodyToFlux(RsiSettingsEvent.class);
-                    return resp.bodyToMono(String.class).defaultIfEmpty("")
-                            .flatMapMany(body -> {
-                                log.error("UserService error: {} {}", resp.statusCode(), body);
-                                return Flux.error(new IllegalStateException("UserService " + resp.statusCode()));
-                            });
-                })
-                .timeout(Duration.ofSeconds(5))
-                .retryWhen(Retry.backoff(4, Duration.ofSeconds(1)).maxBackoff(Duration.ofSeconds(8))
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToFlux(RsiSettingsEvent.class)
+                .timeout(Duration.ofSeconds(12))
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
+                        .maxBackoff(Duration.ofSeconds(8))
                         .filter(this::isRetryable))
-                .doOnSubscribe(s -> log.info("Fetching RSI settings...123"))
+                .doOnSubscribe(s -> log.info("Fetching RSI settings12..."))
                 .doOnError(e -> log.error("Failed to fetch RSI settings", e));
     }
 

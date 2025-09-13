@@ -21,8 +21,9 @@ public class UserServiceClientConfig {
         var tcp = TcpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .doOnConnected(c -> c
-                        .addHandlerLast(new ReadTimeoutHandler(5))
+                        .addHandlerLast(new ReadTimeoutHandler(12))
                         .addHandlerLast(new WriteTimeoutHandler(5)));
+
 
         return builder
                 .baseUrl(baseUrl)
