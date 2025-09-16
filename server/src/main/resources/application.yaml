@@ -28,6 +28,10 @@ app:
       notification:
         name: notification.send
         partitions: 3
+  timezone: Europe/Amsterdam
+  rsi:
+    strategy-counts:
+      reset-cron: "0 0 0 * * *"
 
 server:
   port: 8081

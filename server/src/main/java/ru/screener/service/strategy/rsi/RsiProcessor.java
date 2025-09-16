@@ -2,6 +2,7 @@ package ru.screener.service.strategy.rsi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,7 +26,7 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
 
     private final NotificationPublisher notificationPublisher;
     private final Map<Long, List<RsiSettingsEvent>> userStrategies = new ConcurrentHashMap<>();
-    private final Map<Long, Integer> strategyCounts = new ConcurrentHashMap<>();
+    private final Map<String, Integer> strategyCounts = new ConcurrentHashMap<>();
 
     @Override
     public void process(RsiEvent rsiEvent) {
@@ -37,23 +38,26 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
                     continue;
                 }
 
-                if (rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
-                        && rsiEvent.getRsi().compareTo(setting.getShortRsi()) > 0) {
+                int strategyCount = strategyCounts.getOrDefault(rsiEvent.getSymbol(), 0);
+                boolean shortStrategy = rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
+                        && rsiEvent.getRsi().compareTo(setting.getShortRsi()) > 0;
+                boolean longStrategy = rsiEvent.getTimeframe().equals(setting.getLongTimeFrame())
+                        && rsiEvent.getRsi().compareTo(setting.getLongRsi()) < 0;
 
-                    int strategyCount = strategyCounts.getOrDefault(setting.getTelegramId(), 0);
-
+                if (shortStrategy || longStrategy) {
                     NotificationEvent notification = new NotificationEvent()
                             .setTelegramId(setting.getTelegramId())
                             .setStrategy(Strategy.RSI)
                             .setSymbol(rsiEvent.getSymbol())
                             .setTimeframe(rsiEvent.getTimeframe())
-                            .setDirection(Direction.DOWN)
+                            .setDirection(shortStrategy ? Direction.DOWN : Direction.UP)
                             .setRsi(rsiEvent.getRsi())
                             .setSignalNumber(strategyCount);
 
                     notificationPublisher.sendMessage(notification);
-                    strategyCounts.put(setting.getTelegramId(), strategyCount + 1);
                 }
+
+                strategyCounts.put(rsiEvent.getSymbol(), strategyCount + 1);
             }
         });
     }
@@ -71,5 +75,15 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
         return settingsFlux
                 .doOnNext(this::updateUserStrategy)
                 .then();
+    }
+
+    @Scheduled(
+            cron = "${app.rsi.strategy-counts.reset-cron:0 0 0 * * *}",
+            zone = "${app.timezone:Europe/Amsterdam}"
+    )
+    private void resetDailyStrategyCounts() {
+        int before = strategyCounts.size();
+        strategyCounts.clear();
+        log.info("Сброс strategyCounts: очищено {} ключей", before);
     }
 }
