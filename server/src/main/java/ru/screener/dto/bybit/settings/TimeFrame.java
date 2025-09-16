@@ -1,4 +1,4 @@
-package ru.screener.model.kafka.bybit.settings;
+package ru.screener.dto.bybit.settings;
 
 import lombok.Getter;
 

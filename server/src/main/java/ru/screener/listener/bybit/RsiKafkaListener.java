@@ -2,51 +2,41 @@ package ru.screener.listener.bybit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
-import ru.screener.config.kafka.bybit.KafkaRsiTopicProperties;
+import ru.screener.dto.bybit.strategies.RsiDto;
+import ru.screener.errors.InvalidKafkaMessageException;
 import ru.screener.listener.AbstractKafkaListener;
-import ru.screener.model.kafka.bybit.strategies.RsiEvent;
 import ru.screener.service.strategy.StrategyProcessor;
 
 @Component
 @Slf4j
-public class RsiKafkaListener extends AbstractKafkaListener<RsiEvent> {
+public class RsiKafkaListener extends AbstractKafkaListener<RsiDto> {
 
-    private final StrategyProcessor<RsiEvent> strategyProcessor;
-    private final KafkaRsiTopicProperties topicProperties;
+    private final StrategyProcessor<RsiDto> strategyProcessor;
 
-    public RsiKafkaListener(StrategyProcessor<RsiEvent> strategyProcessor,
-                            KafkaRsiTopicProperties topicProperties,
+    public RsiKafkaListener(StrategyProcessor<RsiDto> strategyProcessor,
                             ObjectMapper objectMapper) {
-        super(objectMapper, RsiEvent.class);
+        super(objectMapper, RsiDto.class);
         this.strategyProcessor = strategyProcessor;
-        this.topicProperties = topicProperties;
     }
 
-    @KafkaListener(
-            topics = "${app.kafka.topic.market.name}",
-            groupId = "strategy-service",
-            containerFactory = "kafkaListenerContainerFactory"
-    )
-    public void listenBybitTopic(String message, Acknowledgment ack) {
-        log.info("Get message {}", message);
-        RsiEvent rsiEvent = getEvent(message);
-        if (rsiEvent == null || rsiEvent.getSymbol() == null) {
-            log.error("Failed to deserialize message or message is incomplete. Original message: {}. Deserialized object: {}", message, rsiEvent);
-            ack.acknowledge();
-            return;
-        }
-
-        log.info("Received a message from {}: {}", topicProperties.getName(), rsiEvent);
-
+    @KafkaListener(topics = "${app.kafka.topic.market.name}", containerFactory = "kafkaListenerContainerFactory")
+    public void listenBybitTopic(ConsumerRecord<String, String> record, Acknowledgment ack) {
+        log.info("Get message {}", record.value());
         try {
-            strategyProcessor.process(rsiEvent);
-        } catch (Exception e) {
-            log.error("Error processing event: {}", rsiEvent, e);
-        }
+            RsiDto rsiDto = getEvent(record.value());
+            log.info("Received a message from {}: {}", record.topic(), rsiDto);
 
-        ack.acknowledge();
+            strategyProcessor.process(rsiDto);
+            ack.acknowledge();
+        } catch (InvalidKafkaMessageException ex) {
+            log.error(ex.getMessage());
+            ack.acknowledge();
+        } catch (Exception ex) {
+            log.error("Error processing record: {}", record, ex);
+        }
     }
 }

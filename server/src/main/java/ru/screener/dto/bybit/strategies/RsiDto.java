@@ -1,4 +1,4 @@
-package ru.screener.model.kafka.bybit.strategies;
+package ru.screener.dto.bybit.strategies;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class RsiEvent {
+public class RsiDto {
 
     @JsonProperty("Symbol")
     private String symbol;

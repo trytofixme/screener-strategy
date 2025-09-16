@@ -1,15 +1,15 @@
-package ru.screener.model.kafka.bybit.notification;
+package ru.screener.dto.bybit.notification;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import ru.screener.model.strategies.Direction;
-import ru.screener.model.strategies.Strategy;
+import ru.screener.model.bybit.strategies.Direction;
+import ru.screener.model.bybit.strategies.Strategy;
 
 import java.math.BigDecimal;
 
 @Data
 @Accessors(chain = true)
-public class NotificationEvent {
+public class NotificationDto {
 
     private Long telegramId;
     private Strategy strategy;

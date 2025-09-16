@@ -19,19 +19,23 @@ spring:
 app:
   kafka:
     topic:
-      market:
-        name: market.bybit
-        partitions: 3
-      user:
-        name: settings.rsi
-        partitions: 3
-      notification:
-        name: notification.send
-        partitions: 3
-  timezone: Europe/Amsterdam
-  rsi:
+      market: { name: market.bybit, partitions: 3 }
+      user: { name: settings.rsi, partitions: 3 }
+      notification: { name: notification.send, partitions: 3 }
+  scheduler:
+    thread_pool_core_size: 25
+    thread_pool_max_size: 100
     strategy-counts:
+      pool-size: 2
+      prefix: strategy-counts-
       reset-cron: "0 0 0 * * *"
+  rsi:
+    settings-loader:
+      timeout: 10s
+      retry-count: 3
+      retry-backoff: 1s
+      jitter-factor: 0.3
+  timezone: Europe/Amsterdam
 
 server:
   port: 8081
@@ -41,8 +45,16 @@ logging:
     root: info
 
 services:
-  user-service:
+  screener-user:
     base-url: http://localhost:8080
+    rsi-settings-uri: /api/v1/settings/rsi
+    connect-timeout: 3s
+    response-timeout: 12s
+    read-timeout: 12
+    write-timeout: 5
+    retry-count: 3
+    retry-backoff: 1s
+    retry-max-backoff: 8s
 
 ---
 spring:
@@ -68,3 +80,7 @@ management:
   health:
     kafka:
       enabled: false
+
+services:
+  screener-user:
+    base-url: http://screener-user.screener-user.svc.cluster.local

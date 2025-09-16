@@ -1,4 +1,4 @@
-package ru.screener.model.kafka.bybit.settings;
+package ru.screener.dto.bybit.settings;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 @Data
 @Accessors(chain = true)
-public class RsiSettingsEvent {
+public class RsiSettingsDto {
 
     @JsonProperty(value = "telegram_id")
     private Long telegramId;

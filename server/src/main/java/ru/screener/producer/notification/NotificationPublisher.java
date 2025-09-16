@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import ru.screener.config.kafka.notification.KafkaNotificationTopicProperties;
-import ru.screener.model.kafka.bybit.notification.NotificationEvent;
+import ru.screener.dto.bybit.notification.NotificationDto;
 
 @Component
 @RequiredArgsConstructor
@@ -14,13 +14,16 @@ public class NotificationPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final KafkaNotificationTopicProperties topicProperties;
 
-    public void sendMessage(NotificationEvent notificationDto) {
-        kafkaTemplate.send(topicProperties.getName(), notificationDto).thenAccept(arg ->
-                        log.info("Notification {} sent to Kafka topic {}", notificationDto, topicProperties.getName()))
-        .exceptionally(ex -> {
-            log.error("Failed to send notification to Kafka topic '{}'. Error: {}",
-            topicProperties.getName(), ex.getMessage());
-            return null;
-        });
+    public void sendMessage(NotificationDto notificationDto) {
+        String key = String.valueOf(notificationDto.getTelegramId());
+        kafkaTemplate.send(topicProperties.getName(), key, notificationDto)
+            .whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("Failed to send to {} key={} dto={}", topicProperties.getName(), key, notificationDto, ex);
+                } else {
+                    var metadata = result.getRecordMetadata();
+                    log.debug("Sent to {}-{}@{} key={}", metadata.topic(), metadata.partition(), metadata.offset(), key);
+                }
+            });
     }
 }

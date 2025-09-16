@@ -1,4 +1,4 @@
-package ru.screener.model.strategies;
+package ru.screener.model.bybit.strategies;
 
 public enum Direction {
     UP,
