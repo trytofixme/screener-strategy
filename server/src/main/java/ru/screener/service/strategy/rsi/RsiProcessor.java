@@ -14,6 +14,7 @@ import ru.screener.model.strategies.Strategy;
 import ru.screener.producer.notification.NotificationPublisher;
 import ru.screener.service.strategy.StrategyProcessor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class RsiProcessor implements StrategyProcessor<RsiEvent> {
 
+    private static final BigDecimal RSI_MIN = BigDecimal.valueOf(0.0);
+    private static final BigDecimal RSI_MAX = BigDecimal.valueOf(100.0);
+
     private final NotificationPublisher notificationPublisher;
     private final Map<Long, List<RsiSettingsEvent>> userStrategies = new ConcurrentHashMap<>();
     private final Map<String, Integer> strategyCounts = new ConcurrentHashMap<>();
@@ -33,6 +37,7 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
         log.info("process RsiEvent : {}", rsiEvent);
         userStrategies.forEach((userId, settings) -> {
             for (RsiSettingsEvent setting : settings) {
+                validateRsi(rsiEvent.getRsi());
                 if (!rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
                         && !rsiEvent.getTimeframe().equals(setting.getLongTimeFrame())) {
                     continue;
@@ -55,9 +60,8 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
                             .setSignalNumber(strategyCount);
 
                     notificationPublisher.sendMessage(notification);
+                    strategyCounts.put(rsiEvent.getSymbol(), strategyCount + 1);
                 }
-
-                strategyCounts.put(rsiEvent.getSymbol(), strategyCount + 1);
             }
         });
     }
@@ -75,6 +79,12 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
         return settingsFlux
                 .doOnNext(this::updateUserStrategy)
                 .then();
+    }
+
+    private void validateRsi(BigDecimal rsiValue) {
+        if (rsiValue == null || rsiValue.compareTo(RSI_MIN) < 0 || rsiValue.compareTo(RSI_MAX) > 0) {
+            log.warn("Значение RSI может быть от 0 до 100");
+        }
     }
 
     @Scheduled(
