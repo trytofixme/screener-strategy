@@ -20,12 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.math.BigDecimal.ZERO;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RsiProcessor implements StrategyProcessor<RsiEvent> {
 
-    private static final BigDecimal RSI_MIN = BigDecimal.valueOf(0.0);
     private static final BigDecimal RSI_MAX = BigDecimal.valueOf(100.0);
 
     private final NotificationPublisher notificationPublisher;
@@ -37,7 +38,10 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
         log.info("process RsiEvent : {}", rsiEvent);
         userStrategies.forEach((userId, settings) -> {
             for (RsiSettingsEvent setting : settings) {
-                validateRsi(rsiEvent.getRsi());
+                if (!isValidRsi(rsiEvent.getRsi())) {
+                    continue;
+                }
+
                 if (!rsiEvent.getTimeframe().equals(setting.getShortTimeFrame())
                         && !rsiEvent.getTimeframe().equals(setting.getLongTimeFrame())) {
                     continue;
@@ -81,10 +85,8 @@ public class RsiProcessor implements StrategyProcessor<RsiEvent> {
                 .then();
     }
 
-    private void validateRsi(BigDecimal rsiValue) {
-        if (rsiValue == null || rsiValue.compareTo(RSI_MIN) < 0 || rsiValue.compareTo(RSI_MAX) > 0) {
-            log.warn("Значение RSI может быть от 0 до 100");
-        }
+    private boolean isValidRsi(BigDecimal rsiValue) {
+        return rsiValue != null && rsiValue.compareTo(ZERO) > 0 && rsiValue.compareTo(RSI_MAX) <= 0;
     }
 
     @Scheduled(
