@@ -11,6 +11,7 @@ import ru.screener.dto.bybit.notification.NotificationDto;
 @RequiredArgsConstructor
 @Slf4j
 public class NotificationPublisher {
+
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final KafkaNotificationTopicProperties topicProperties;
 

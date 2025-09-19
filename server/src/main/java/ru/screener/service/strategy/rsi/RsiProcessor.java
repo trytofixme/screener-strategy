@@ -55,7 +55,11 @@ public class RsiProcessor implements StrategyProcessor<RsiDto> {
 
             final String key = rsiDto.getSymbol() + '|' + telegramId + '|' + timeFrame;
             final int strategyCount = strategyCounts
-                    .computeIfAbsent(key, k -> new LongAdder())
+                    .computeIfAbsent(key, k -> {
+                        LongAdder adder = new LongAdder();
+                        adder.increment();
+                        return adder;
+                    })
                     .intValue();
 
             final NotificationDto notificationDto = new NotificationDto()
