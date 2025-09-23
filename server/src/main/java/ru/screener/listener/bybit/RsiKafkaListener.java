@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import ru.screener.dto.bybit.strategies.RsiDto;
 import ru.screener.errors.InvalidKafkaMessageException;
 import ru.screener.listener.AbstractKafkaListener;
+import ru.screener.service.deduplication.CaffeineDeduplicationService;
 import ru.screener.service.strategy.StrategyProcessor;
 
 @Component
@@ -16,11 +17,14 @@ import ru.screener.service.strategy.StrategyProcessor;
 public class RsiKafkaListener extends AbstractKafkaListener<RsiDto> {
 
     private final StrategyProcessor<RsiDto> strategyProcessor;
+    private final CaffeineDeduplicationService deduplicationService;
 
     public RsiKafkaListener(StrategyProcessor<RsiDto> strategyProcessor,
+                            CaffeineDeduplicationService deduplicationService,
                             ObjectMapper objectMapper) {
         super(objectMapper, RsiDto.class);
         this.strategyProcessor = strategyProcessor;
+        this.deduplicationService = deduplicationService;
     }
 
     @KafkaListener(topics = "${app.kafka.topic.market.name}", containerFactory = "kafkaListenerContainerFactory")
@@ -29,6 +33,9 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiDto> {
         try {
             RsiDto rsiDto = getEvent(record.value());
             log.info("Received a message from {}: {}", record.topic(), rsiDto);
+            if (deduplicationService.firstTime(rsiDto.getCrc32())) {
+                return;
+            }
 
             strategyProcessor.process(rsiDto);
             ack.acknowledge();

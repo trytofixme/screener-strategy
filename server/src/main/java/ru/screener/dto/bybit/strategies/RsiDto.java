@@ -20,4 +20,6 @@ public class RsiDto {
     private String timeframe;
     @JsonProperty("RSI")
     private BigDecimal rsi;
+    @JsonProperty("Crc")
+    private long crc32;
 }
