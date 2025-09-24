@@ -33,7 +33,8 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiDto> {
         try {
             RsiDto rsiDto = getEvent(record.value());
             log.info("Received a message from {}: {}", record.topic(), rsiDto);
-            if (deduplicationService.firstTime(rsiDto.getCrc32())) {
+            if (!deduplicationService.firstTime(rsiDto.getCrc32())) {
+                log.info("Duplicate message from {}: {}", record.topic(), rsiDto);
                 return;
             }
 
