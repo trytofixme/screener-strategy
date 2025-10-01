@@ -19,7 +19,10 @@ spring:
 app:
   kafka:
     topic:
-      market: { name: market.bybit, partitions: 3 }
+      bybit15m: { name: market.bybit.15m, partitions: 3 }
+      bybit1h: { name: market.bybit.1h, partitions: 3 }
+      bybit4h: { name: market.bybit.4h, partitions: 3 }
+      bybit1D: { name: market.bybit.1D, partitions: 3 }
       user: { name: settings.rsi, partitions: 3 }
       notification: { name: notification.send, partitions: 3 }
   scheduler:

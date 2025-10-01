@@ -7,10 +7,12 @@ import java.math.BigDecimal;
 
 @Data
 @Accessors(chain = true)
-public class RsiSettings {
+public final class RsiSettings {
 
     private String shortTimeFrame;
     private String longTimeFrame;
     private BigDecimal shortRsi;
     private BigDecimal longRsi;
+    private BigDecimal shortDump;
+    private BigDecimal longDump;
 }
