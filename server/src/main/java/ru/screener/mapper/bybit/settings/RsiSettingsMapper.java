@@ -7,11 +7,13 @@ import ru.screener.dto.bybit.settings.RsiSettingsDto;
 @Component
 public class RsiSettingsMapper {
 
-    public RsiSettings toDomain(RsiSettingsDto rsiSettingsEvent) {
+    public RsiSettings toDomain(RsiSettingsDto rsiSettingsDto) {
         return new RsiSettings()
-                .setShortTimeFrame(rsiSettingsEvent.getShortTimeFrame())
-                .setLongTimeFrame(rsiSettingsEvent.getLongTimeFrame())
-                .setShortRsi(rsiSettingsEvent.getShortRsi())
-                .setLongRsi(rsiSettingsEvent.getLongRsi());
+                .setShortTimeFrame(rsiSettingsDto.getShortTimeFrame())
+                .setLongTimeFrame(rsiSettingsDto.getLongTimeFrame())
+                .setShortRsi(rsiSettingsDto.getShortRsi())
+                .setLongRsi(rsiSettingsDto.getLongRsi())
+                .setShortDump(rsiSettingsDto.getShortDump())
+                .setLongDump(rsiSettingsDto.getLongDump());
     }
 }

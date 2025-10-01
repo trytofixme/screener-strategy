@@ -27,7 +27,12 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiDto> {
         this.deduplicationService = deduplicationService;
     }
 
-    @KafkaListener(topics = "${app.kafka.topic.market.name}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = {
+            "${app.kafka.topic.bybit15m.name}",
+            "${app.kafka.topic.bybit1h.name}",
+            "${app.kafka.topic.bybit4h.name}",
+            "${app.kafka.topic.bybit1D.name}"
+    }, containerFactory = "kafkaListenerContainerFactory")
     public void listenBybitTopic(ConsumerRecord<String, String> record, Acknowledgment ack) {
         log.info("Get message {}", record.value());
         try {
@@ -35,6 +40,7 @@ public class RsiKafkaListener extends AbstractKafkaListener<RsiDto> {
             log.info("Received a message from {}: {}", record.topic(), rsiDto);
             if (!deduplicationService.firstTime(rsiDto.getCrc32())) {
                 log.info("Duplicate message from {}: {}", record.topic(), rsiDto);
+                ack.acknowledge();
                 return;
             }
 

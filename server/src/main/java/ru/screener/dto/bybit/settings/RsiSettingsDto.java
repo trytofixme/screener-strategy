@@ -22,4 +22,9 @@ public class RsiSettingsDto {
     private BigDecimal shortRsi;
     @JsonProperty(value = "long_rsi")
     private BigDecimal longRsi;
+
+    @JsonProperty(value = "short_dump")
+    private BigDecimal shortDump;
+    @JsonProperty(value = "long_dump")
+    private BigDecimal longDump;
 }
