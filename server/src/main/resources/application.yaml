@@ -31,7 +31,7 @@ app:
     strategy-counts:
       pool-size: 2
       prefix: strategy-counts-
-      reset-cron: "0 0 0 * * *"
+      reset-cron: "0 0 3 * * *"
   rsi:
     settings-loader:
       timeout: 10s
