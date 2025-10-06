@@ -135,6 +135,7 @@ public class RsiLevelsCache {
             return base;
         });
 
+        log.info("Level state for cache key {} = {} on rsi {} strategy {}", cacheKey, levelState, rsi, (isLong ? "LONG" : "SHORT"));
         return levelState != null
                 && levelState.getLastReportedValue() != null
                 && !Objects.equals(levelState.getLastReportedValue(), beforeReported);
