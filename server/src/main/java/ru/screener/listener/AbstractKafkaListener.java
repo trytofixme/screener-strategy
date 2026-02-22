@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.support.Acknowledgment;
+import ru.screener.dto.bybit.strategies.RsiDto;
 import ru.screener.errors.InvalidKafkaMessageException;
 
 @RequiredArgsConstructor
@@ -22,4 +25,22 @@ public abstract class AbstractKafkaListener<T> {
             throw new InvalidKafkaMessageException("Invalid message format", ex);
         }
     }
+
+    protected void onMessage(ConsumerRecord<String, String> record, Acknowledgment ack){
+        log.info("Get message {}", record.value());
+        try {
+            T rsiDto = getEvent(record.value());
+            log.info("Received a message from {}: {}", record.topic(), rsiDto);
+
+            handle(rsiDto);
+            ack.acknowledge();
+        } catch (InvalidKafkaMessageException ex) {
+            log.error(ex.getMessage());
+            ack.acknowledge();
+        } catch (Exception ex) {
+            log.error("Error processing record: {}", record, ex);
+        }
+    }
+
+    protected abstract void handle(T dto);
 }

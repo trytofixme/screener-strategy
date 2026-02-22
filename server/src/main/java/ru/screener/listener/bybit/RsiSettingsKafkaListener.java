@@ -38,4 +38,9 @@ public class RsiSettingsKafkaListener extends AbstractKafkaListener<RsiSettingsD
             log.error("Error processing record: {}", record, ex);
         }
     }
+
+    @Override
+    protected void handle(RsiSettingsDto dto) {
+
+    }
 }
